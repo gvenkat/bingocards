@@ -24,7 +24,7 @@ Constructor takes following arguments
   * background      - If no 'with_ref_image' is set, this background is applied to the new image
   * header          - space to be left out of top
 
-Apart from this, you can twean followin properties before printing the card
+Apart from this, you can tweak followin properties before printing the card
   
   * font            - Path to the truetypefont 
   * line_size       - size of the lines that are drawn
