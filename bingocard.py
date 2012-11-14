@@ -15,16 +15,12 @@ class BingoCard( object ):
     image = card.image
     t     = card.type
 
-    if t in [ 'us', '75' ]:
-      rows = ( ( how_many - 1 ) // cols_per_image ) + 1
+    rows = ( ( how_many - 1 ) // cols_per_image ) + 1
 
-      if how_many >= cols_per_image:
-        cols = cols_per_image
-      else:
-        cols = how_many
-
+    if how_many >= cols_per_image:
+      cols = cols_per_image
     else:
-      rows = 5
+      cols = how_many
 
     iw, ih, w, h = card.width, card.height, card.width * cols, card.height * rows 
     nimage = Image.new( 'RGB', ( w, h ), background )
@@ -69,7 +65,6 @@ class BingoCard( object ):
       
 
   def uk_card_layout( self ):
-
     return [
       range( 1, 9 ),
       range( 10, 19 ),
@@ -87,42 +82,53 @@ class BingoCard( object ):
     return [ range( i, i + 15 ) for i in range( 1, 75, 15 ) ]
 
 
-  def draw( self, layout, save_to ):
-    print "About to draw"
-
-    image, width, height = self.image, self.width, self.height
-
+  def get_text_size( self ):
     if self.text_size is None:
-      text_size = int( width / 38.4 )
+      text_size = int( self.width / 38.4 )
     else:
       text_size	= self.text_size
 
-    font = ImageFont.truetype( self.font, text_size )
+    return text_size
 
-    ml, mr, mt, mb = self.margin_left, self.margin_right, self.margin_top, self.margin_bottom
 
+  def get_font( self ):
+    return ImageFont.truetype( self.font, self.get_text_size() )
+
+
+  def get_top( self ):
     if self.header:
       top = ( self.header ) + self.margin_top
     else:
       top = self.margin_top
 
+    return top
+
+  def draw_lines_on_image( self, layout, col_height, col_width ):
+    if self.draw_lines:
+      # Rows
+      for i in range( len( layout ) + 1 ):
+        y = ( self.get_top() + ( i * col_height ) )
+        draw.line( ( self.margin_left, y, self.width - self.margin_right, y ), fill=self.line_color, width=self.line_size  )
+
+      # Cols
+      for j in range( len( layout[ 0 ] ) + 1 ):
+        x = self.margin_left + ( j * col_width )
+        draw.line( ( x, self.get_top(), x, self.height - self.margin_bottom ), fill=self.line_color, width=self.line_color )
+
+
+
+  def draw( self, layout, save_to ):
+    print "About to draw"
+
+    image, width, height = self.image, self.width, self.height
+    font, text_size, top = self.get_font(), self.get_text_size(), self.get_top()
+    ml, mr, mt, mb = self.margin_left, self.margin_right, self.margin_top, self.margin_bottom
+
     draw        = ImageDraw.Draw( image )
     col_height  = ( height - top - mb ) / len( layout )
     col_width   = ( width - ( ml + mr ) ) / len( layout[ 0 ] )
 
-    if self.draw_lines:
-
-      # Rows
-      for i in range( len( layout ) + 1 ):
-        y = ( top + ( i * col_height ) )
-        draw.line( ( ml, y, width - mr, y ), fill=self.line_color, width=self.line_size  )
-
-      # Cols
-      for j in range( len( layout[ 0 ] ) + 1 ):
-        x = margin + ( j * col_width )
-        draw.line( ( x, top, x, height - mb ), fill=self.line_color, width=self.line_color )
-
-
+    self.draw_lines_on_image( layout, col_height, col_width )
 
     # Start drawing numbers
     for i in range( len( layout ) ):
@@ -213,8 +219,11 @@ class BingoCard( object ):
 
 if __name__ == '__main__':
 
-  o = BingoCard( t='us', header=90, margin_top=35, margin_left=60, margin_right=65, margin_bottom=100, with_ref_image='templates/75/indigo.jpg', draw_lines=False )
+  # o = BingoCard( t='us', header=90, margin_top=35, margin_left=60, margin_right=65, margin_bottom=100, with_ref_image='templates/75/indigo.jpg', draw_lines=False )
+  # o.print_card( 'us_bingo2.png' )
 
-  BingoCard.draw_several_cards( o, how_many=6, save_to='us_bingo2.png' )
+  o = BingoCard( t='uk', header=50, margin_top=40, margin_left=35, margin_right=38, margin_bottom=42, with_ref_image='templates/90/indigo.jpg', draw_lines=False )
+  BingoCard.draw_several_cards( o, how_many=6, save_to='uk_bingo2.png', cols_per_image=1, background='white' ) 
+
 
 
