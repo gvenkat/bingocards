@@ -7,8 +7,39 @@ class BingoCard( object ):
 
 
   @classmethod
-  def draw_several_cards( self, card, how_many=6, where=None ):
-    print "About to draw several cards"
+  def draw_several_cards( self, card, how_many=6, save_to=None, cols_per_image=3, background='white' ):
+
+    if card.image is None:
+      card.initialize_image()
+
+    image = card.image
+    t     = card.type
+
+    if t in [ 'us', '75' ]:
+      rows = ( ( how_many - 1 ) // cols_per_image ) + 1
+
+      if how_many >= cols_per_image:
+        cols = cols_per_image
+      else:
+        cols = how_many
+
+    else:
+      rows = 5
+
+    iw, ih, w, h = card.width, card.height, card.width * cols, card.height * rows 
+    nimage = Image.new( 'RGB', ( w, h ), background )
+
+    for row in range( rows ): 
+      for col in range( cols ):
+        embed_image = card.print_card( save_to=None )
+        nimage.paste( embed_image, ( col * iw, row * ih ) ) 
+
+
+    if save_to is None:
+      return nimage
+    else: 
+      return nimage.save( save_to )
+
 
 
 
@@ -25,6 +56,7 @@ class BingoCard( object ):
     self.line_color = 0
     self.text_size = None
     self.text_color = 0
+    self.image  = None
 
     if margin is None and ( margin_left > 0 and margin_right > 0 and margin_bottom > 0 and margin_top > 0 ):
       self.margin_left    = margin_left 
@@ -37,6 +69,7 @@ class BingoCard( object ):
       
 
   def uk_card_layout( self ):
+
     return [
       range( 1, 9 ),
       range( 10, 19 ),
@@ -55,6 +88,8 @@ class BingoCard( object ):
 
 
   def draw( self, layout, save_to ):
+    print "About to draw"
+
     image, width, height = self.image, self.width, self.height
 
     if self.text_size is None:
@@ -101,11 +136,17 @@ class BingoCard( object ):
           draw.text( ( x, y ), str( number ), fill=0, font=font )
 
 
+    print "OK"
+
     # Save stuff
-    image.save( save_to )
+    if save_to is None:
+      return image
+    else:
+      image.save( save_to )
 
 
-    print "About to draw"
+
+
 
 
   def uk_bingo_card( self ):
@@ -147,22 +188,25 @@ class BingoCard( object ):
     return blanks
 
 
-
-  def print_card( self, save_to='test.png' ):
+  def initialize_image( self ):
 
     if( self.with_ref_image ):
       self.image = im = Image.open( self.with_ref_image )
       self.width, self.height = im.size
-
     else:
       self.image  = Image.new( 'RGB', ( self.width, self.height ), self.background )
 
 
+
+  def print_card( self, save_to='test.png' ):
+
+    self.initialize_image()
+
     if self.type in [ 90, 'uk' ]:
-      self.draw( self.uk_bingo_card(), save_to )
+      return self.draw( self.uk_bingo_card(), save_to )
 
     elif self.type in [ 75, 'us' ]:
-      self.draw( self.us_bingo_card(), save_to )
+      return self.draw( self.us_bingo_card(), save_to )
 
 
 
@@ -171,6 +215,6 @@ if __name__ == '__main__':
 
   o = BingoCard( t='us', header=90, margin_top=35, margin_left=60, margin_right=65, margin_bottom=100, with_ref_image='templates/75/indigo.jpg', draw_lines=False )
 
-  BingoCard.draw_several_cards( o, 2, 'us_bingo2.png' )
+  BingoCard.draw_several_cards( o, how_many=6, save_to='us_bingo2.png' )
 
 
