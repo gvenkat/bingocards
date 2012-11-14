@@ -5,7 +5,14 @@ import random, sys, os
 
 class BingoCard( object ):
 
-  def __init__( self, t=90, width=800, height=600, header=10, margin=10, with_ref_image=None, background='white' ):
+
+  @classmethod
+  def draw_several_cards( self, card, how_many=6, where=None ):
+    print "About to draw several cards"
+
+
+
+  def __init__( self, t=90, width=800, height=600, header=10, margin_top=10, margin_left=10, margin_right=10, margin_bottom=10, margin=None, with_ref_image=None, background='white', draw_lines=True ):
     self.type   = t
     self.width  = width
     self.height = height
@@ -13,11 +20,21 @@ class BingoCard( object ):
     self.with_ref_image = with_ref_image
     self.background = background
     self.font = 'Overlock-Black.ttf'
+    self.draw_lines = draw_lines
     self.line_size  = 2
     self.line_color = 0
     self.text_size = None
     self.text_color = 0
-    self.margin	= 10
+
+    if margin is None and ( margin_left > 0 and margin_right > 0 and margin_bottom > 0 and margin_top > 0 ):
+      self.margin_left    = margin_left 
+      self.margin_right   = margin_right
+      self.margin_bottom  = margin_bottom
+      self.margin_top     = margin_top
+    else:
+      margin = margin or 10
+      self.margin_top = self.margin_left = self.margin_right = self.margin_bottom = margin 
+      
 
   def uk_card_layout( self ):
     return [
@@ -34,13 +51,7 @@ class BingoCard( object ):
 
 
   def us_card_layout( self ):
-    return [
-      range( 1, 15 ),
-      range( 16, 30 ),
-      range( 31, 45 ),
-      range( 46, 60 ),
-      range( 61, 75 )
-    ]
+    return [ range( i, i + 15 ) for i in range( 1, 75, 15 ) ]
 
 
   def draw( self, layout, save_to ):
@@ -53,27 +64,28 @@ class BingoCard( object ):
 
     font = ImageFont.truetype( self.font, text_size )
 
-    # FIXME: Needs to be configurable
-    margin  = self.margin
+    ml, mr, mt, mb = self.margin_left, self.margin_right, self.margin_top, self.margin_bottom
 
     if self.header:
-      top = ( self.header ) + margin
+      top = ( self.header ) + self.margin_top
     else:
-      top = margin
+      top = self.margin_top
 
     draw        = ImageDraw.Draw( image )
-    col_height  = ( height - top - margin ) / len( layout )
-    col_width   = ( width - ( 2 * margin ) ) / len( layout[ 0 ] )
+    col_height  = ( height - top - mb ) / len( layout )
+    col_width   = ( width - ( ml + mr ) ) / len( layout[ 0 ] )
 
-    # Rows
-    for i in range( len( layout ) + 1 ):
-      y = ( top + ( i * col_height ) )
-      draw.line( ( margin, y, width - margin, y ), fill=self.line_color, width=self.line_size  )
+    if self.draw_lines:
 
-    # Cols
-    for j in range( len( layout[ 0 ] ) + 1 ):
-      x = margin + ( j * col_width )
-      draw.line( ( x, top, x, height - margin ), fill=self.line_color, width=self.line_color )
+      # Rows
+      for i in range( len( layout ) + 1 ):
+        y = ( top + ( i * col_height ) )
+        draw.line( ( ml, y, width - mr, y ), fill=self.line_color, width=self.line_size  )
+
+      # Cols
+      for j in range( len( layout[ 0 ] ) + 1 ):
+        x = margin + ( j * col_width )
+        draw.line( ( x, top, x, height - mb ), fill=self.line_color, width=self.line_color )
 
 
 
@@ -82,7 +94,7 @@ class BingoCard( object ):
       for j in range( len( layout[0] ) ):
         number = layout[ i ][ j ]
 
-        x = margin + ( j * col_width ) + ( col_width / 2 ) - ( text_size / 2 )
+        x = ml + ( j * col_width ) + ( col_width / 2 ) - ( text_size / 2 )
         y = top + ( i * col_height ) + ( col_height / 2 ) - ( text_size / 2 )
 
         if number is not None:
@@ -132,16 +144,6 @@ class BingoCard( object ):
 
     blanks[ 2 ][ 2 ] = None
 
-    for x in [ 0, 1, 2, 3, 4 ]:
-      if random.randint( 0, 4 ) > 0:
-        index = -1
-
-        while index < 0 or index == 2 or blanks[ x ][ index ] is None:
-          index = random.randint( 0, len( blanks[ x ] ) - 1 );
-
-        blanks[ x ][ index ] = None
-
-
     return blanks
 
 
@@ -167,9 +169,8 @@ class BingoCard( object ):
 
 if __name__ == '__main__':
 
-  o = BingoCard( header=85 )
-  print o.print_card( 'uk_bingo2.png' )
+  o = BingoCard( t='us', header=90, margin_top=35, margin_left=60, margin_right=65, margin_bottom=100, with_ref_image='templates/75/indigo.jpg', draw_lines=False )
 
-  o = BingoCard( t='us', header=120 )
-  print o.print_card( 'us_bingo2.png' )
+  BingoCard.draw_several_cards( o, 2, 'us_bingo2.png' )
+
 
