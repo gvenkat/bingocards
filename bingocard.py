@@ -278,9 +278,14 @@ class UKBingoCard( BingoCard ):
       print "BEFORE NONE PROCESSING"
       print row
 
+      def __filter( x ):
+        return x is not None
 
-      while len( filter( lambda x: x is not None, row ) ) != 5:
-        l = len( filter( lambda x: x is not None, row ) )
+
+      tries = 0
+      while len( filter( __filter, row ) ) != 5 and tries < 20:
+        tries += 1
+        l = len( filter( __filter, row ) )
         if l > 5:
           index = random.randint( 0, len( row ) - 1 )
           row[ index ] = None
@@ -289,7 +294,7 @@ class UKBingoCard( BingoCard ):
             if row[ j ] is None:
               possible_values = list( set( layout[ j ] ) - set( [ x[ j ] for x in blanks ] ) )
               if len( possible_values ) == 0:
-                row[ j ] = 'NA'
+                row[ j ] = None
               else:
                 row[ j ] = possible_values[ 0 ]
 
