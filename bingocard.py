@@ -14,7 +14,6 @@ class BingoCard( object ):
       card.initialize_image()
 
     image = card.image
-    t     = card.type
 
     rows = ( ( how_many - 1 ) // cols_per_image ) + 1
 
@@ -38,10 +37,32 @@ class BingoCard( object ):
       return nimage.save( save_to )
 
 
+  def _initialize_args( self ):
+
+    return [
+        'width',
+        'height',
+        'header',
+        'margin_top',
+        'margin_left',
+        'margin_right',
+        'margin_bottom',
+        'margin',
+        'with_ref_image',
+        'background',
+        'draw_lines'
+      ]
+
+  def _prepare_args_from_dictionary( self, _kwargs ):
+    new_kwargs = { }
+    for i in self._initialize_args():
+      if _kwargs.has_key( i ):
+        new_kwargs[ i ] = _kwargs[ i ]
+
+    return new_kwargs
 
 
-  def __init__( self, t=90, width=800, height=600, header=10, margin_top=10, margin_left=10, margin_right=10, margin_bottom=10, margin=None, with_ref_image=None, background='white', draw_lines=True ):
-    self.type   = t
+  def __init__( self, width=800, height=600, header=10, margin_top=10, margin_left=10, margin_right=10, margin_bottom=10, margin=None, with_ref_image=None, background='white', draw_lines=True ):
     self.width  = width
     self.height = height
     self.header = header
@@ -65,23 +86,8 @@ class BingoCard( object ):
       self.margin_top = self.margin_left = self.margin_right = self.margin_bottom = margin
 
 
-  def uk_card_layout( self ):
-    return [
-      range( 1, 9 ),
-      range( 10, 19 ),
-      range( 20, 29 ),
-      range( 30, 39 ),
-      range( 40, 49 ),
-      range( 50, 59 ),
-      range( 60, 69 ),
-      range( 70, 79 ),
-      range( 80, 90 )
-    ]
-
-
-  def us_card_layout( self ):
-    return [ range( i, i + 15 ) for i in range( 1, 75, 15 ) ]
-
+  def card_layout( self ):
+    return [ ]
 
   def get_text_size( self ):
     if self.text_size is None:
@@ -142,7 +148,6 @@ class BingoCard( object ):
         if number is not None:
           draw.text( ( x, y ), str( number ), fill=0, font=font )
 
-
     print "OK"
 
     # Save stuff
@@ -153,13 +158,76 @@ class BingoCard( object ):
 
 
 
+  def bingo_card( self ):
+    """ Needs to be implemented by the subclass """
+
+
+  def initialize_image( self ):
+    if( self.with_ref_image ):
+      self.image = im = Image.open( self.with_ref_image )
+      self.width, self.height = im.size
+    else:
+      self.image  = Image.new( 'RGB', ( self.width, self.height ), self.background )
+
+
+  def print_card( self, save_to='test.png' ):
+    self.initialize_image()
+    return self.draw( self.bingo_card(), save_to )
+
+
+class USBingoCard( BingoCard ):
+
+  def __init__( self, **kwargs ):
+    BingoCard.__init__( self, **self._prepare_args_from_dictionary( kwargs ) )
+
+
+  def card_layout( self ):
+    return [ range( i, i + 15 ) for i in range( 1, 75, 15 ) ]
+
+
+  def bingo_card( self ):
+    layout   = self.card_layout()
+    num_of_rows = 5
+    cols        = 5
+    blanks      = [ ]
+
+    for i in range( num_of_rows ):
+      row = [
+        layout[ j ][ random.randint( 0, len( layout[ j ] ) - 1 ) ] for j in range( cols )
+      ]
+
+      blanks.append( row )
+
+    blanks[ 2 ][ 2 ] = None
+
+    return blanks
 
 
 
-  def uk_bingo_card( self ):
-    layout             = self.uk_card_layout()
+class UKBingoCard( BingoCard ):
+
+  def __init__( self, **kwargs ):
+    BingoCard.__init__( self, **self._prepare_args_from_dictionary( kwargs ) )
+
+
+  def card_layout( self ):
+    return [
+      range( 1, 9 ),
+      range( 10, 19 ),
+      range( 20, 29 ),
+      range( 30, 39 ),
+      range( 40, 49 ),
+      range( 50, 59 ),
+      range( 60, 69 ),
+      range( 70, 79 ),
+      range( 80, 90 )
+    ]
+
+
+  def bingo_card( self ):
+    layout                = self.card_layout()
     num_of_rows           = 3
-    cols                  = len( self.uk_card_layout() )
+    cols                  = len( self.card_layout() )
     blanks                = [ ]
 
     for i in range( num_of_rows ):
@@ -177,53 +245,20 @@ class BingoCard( object ):
     return blanks
 
 
-  def us_bingo_card( self ):
-    layout   = self.us_card_layout()
-    num_of_rows = 5
-    cols        = 5
-    blanks      = [ ]
-
-    for i in range( num_of_rows ):
-      row = [
-        layout[ j ][ random.randint( 0, len( layout[ j ] ) - 1 ) ] for j in range( cols )
-      ]
-
-      blanks.append( row )
-
-    blanks[ 2 ][ 2 ] = None
-
-    return blanks
-
-
-  def initialize_image( self ):
-
-    if( self.with_ref_image ):
-      self.image = im = Image.open( self.with_ref_image )
-      self.width, self.height = im.size
-    else:
-      self.image  = Image.new( 'RGB', ( self.width, self.height ), self.background )
 
 
 
-  def print_card( self, save_to='test.png' ):
 
-    self.initialize_image()
-
-    if self.type in [ 90, 'uk' ]:
-      return self.draw( self.uk_bingo_card(), save_to )
-
-    elif self.type in [ 75, 'us' ]:
-      return self.draw( self.us_bingo_card(), save_to )
 
 
 
 
 if __name__ == '__main__':
 
-  # o = BingoCard( t='us', header=90, margin_top=35, margin_left=60, margin_right=65, margin_bottom=100, with_ref_image='templates/75/indigo.jpg', draw_lines=False )
-  # o.print_card( 'us_bingo2.png' )
+  o = USBingoCard( t='us', header=90, margin_top=35, margin_left=60, margin_right=65, margin_bottom=100, with_ref_image='templates/75/indigo.jpg', draw_lines=False )
+  o.print_card( 'us_bingo2.png' )
 
-  o = BingoCard( t='uk', header=50, margin_top=40, margin_left=35, margin_right=38, margin_bottom=42, with_ref_image='templates/90/indigo.jpg', draw_lines=False )
+  o = UKBingoCard( t='uk', header=50, margin_top=40, margin_left=35, margin_right=38, margin_bottom=42, with_ref_image='templates/90/indigo.jpg', draw_lines=False )
   BingoCard.draw_several_cards( o, how_many=6, save_to='uk_bingo2.png', cols_per_image=1, background='white' )
 
 
