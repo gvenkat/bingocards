@@ -211,7 +211,6 @@ class UKBingoCard( BingoCard ):
 
     if kwargs.has_key( 'set_size' ):
       self.set_size = kwargs[ 'set_size' ]
-      self.stack = range(1,91)
     else:
       self.set_size = 1
 
@@ -233,87 +232,54 @@ class UKBingoCard( BingoCard ):
 
   def bingo_card( self ):
     layout                = self.card_layout()
-    num_of_rows           = 3 * self.set_size
+    num_of_rows           = 3
     cols                  = len( self.card_layout() )
     blanks                = [ ]
+    stack                 = range( 1, 91 )
+    seen                  = { }
 
-
-    for i in range( num_of_rows ):
-
-      # Start with an empty row
-      row = [ ]
-
-      # Foreach column slot
-      print "PROCESSING ROW: %d" % ( i )
-
-      for j in range( 9 ):
-        print "PROCESSING COL: %d" % ( j )
-
-        # Set the value to be none temporarily
-        val = None
-
-        while val is None:
-
-          # Get a random value
-          val = layout[ j ][ random.randint( 0, len( layout[ j ] ) - 1 ) ]
-
-          # All the values for that column
-          col_values = [ x[ j ] for x in blanks ]
-
-          if val in col_values and len( col_values ) < len( layout[ j ] ):
-            val = None
-          else:
-            if not val in col_values and val is not None:
-              row.append( val )
-
-              if val in self.stack:
-                self.stack.remove( val )
-
-            elif len( col_values ) < len( layout[ j ] ):
-              val = None
+    for s in range( self.set_size ):
+      for i in range( num_of_rows ):
+        row = [ None ] * 9
+        published_cols = {}
+        for j in range( 5 ):
+          val = None
+          tries = 0
+          while val is None:
+            if tries > 20:
+              break
+            tries += 1
+            val = random.choice( stack )
+            for k in range( len( layout ) ):
+              if val in layout[ k ]:
+                if (published_cols.has_key( k ) and published_cols[ k ] < 4):
+                  val = None
+            if not seen.has_key( val ):
+              for k in range( len( layout ) ):
+                if val in layout[ k ]:
+                  if not published_cols.has_key( k ) or (published_cols.has_key( k ) and published_cols[ k ] < 4):
+                    print "ROW %d, COL %d , Val %d" % ( i, j, val )
+                    row[ k ] = val
+                    if not published_cols.has_key( k ):
+                      published_cols[ k ] = 1
+                    else:
+                      published_cols[ k ] += 1
+                    seen[ val ] = True
+                    stack.remove( val )
+                    break
+                  else:
+                    pass
             else:
-              row.append( None )
+              val = None
+
+        blanks.append( row )
 
 
-      print "BEFORE NONE PROCESSING"
-      print row
-
-      def __filter( x ):
-        return x is not None
-
-
-      tries = 0
-      while len( filter( __filter, row ) ) != 5 and tries < 20:
-        tries += 1
-        l = len( filter( __filter, row ) )
-        if l > 5:
-          index = random.randint( 0, len( row ) - 1 )
-          row[ index ] = None
-        elif l < 5:
-          for j in range( len( row ) ):
-            if row[ j ] is None:
-              possible_values = list( set( layout[ j ] ) - set( [ x[ j ] for x in blanks ] ) )
-              if len( possible_values ) == 0:
-                row[ j ] = None
-              else:
-                row[ j ] = possible_values[ 0 ]
-
-      print "ROW IS:"
-      print row
-
-      blanks.append( row )
-
-
-
-    print "THE ENTIRE GAME"
-    print self.stack
-
-    return blanks
-
-
-
-
-
+    print blanks
+    if len(stack) > 0:
+      return self.bingo_card()
+    else:
+      return blanks
 
 
 
