@@ -110,7 +110,7 @@ class BingoCard( object ):
 
     return top
 
-  def draw_lines_on_image( self, layout, col_height, col_width ):
+  def draw_lines_on_image( self, draw, layout, col_height, col_width ):
     if self.draw_lines:
       # Rows
       for i in range( len( layout ) + 1 ):
@@ -135,7 +135,7 @@ class BingoCard( object ):
     col_height  = ( height - top - mb ) / len( layout )
     col_width   = ( width - ( ml + mr ) ) / len( layout[ 0 ] )
 
-    self.draw_lines_on_image( layout, col_height, col_width )
+    self.draw_lines_on_image( draw, layout, col_height, col_width )
 
     # Start drawing numbers
     for i in range( len( layout ) ):
@@ -209,38 +209,84 @@ class UKBingoCard( BingoCard ):
   def __init__( self, **kwargs ):
     BingoCard.__init__( self, **self._prepare_args_from_dictionary( kwargs ) )
 
+    if kwargs.has_key( 'set_size' ):
+      self.set_size = kwargs[ 'set_size' ]
+    else:
+      self.set_size = 1
+
+
 
   def card_layout( self ):
     return [
-      range( 1, 9 ),
-      range( 10, 19 ),
-      range( 20, 29 ),
-      range( 30, 39 ),
-      range( 40, 49 ),
-      range( 50, 59 ),
-      range( 60, 69 ),
-      range( 70, 79 ),
-      range( 80, 90 )
+      range( 1, 9 + 1 ),
+      range( 10, 19 + 1 ),
+      range( 20, 29 + 1),
+      range( 30, 39 + 1 ),
+      range( 40, 49 + 1),
+      range( 50, 59 + 1),
+      range( 60, 69 + 1),
+      range( 70, 79 + 1),
+      range( 80, 90 + 1)
     ]
 
 
   def bingo_card( self ):
     layout                = self.card_layout()
-    num_of_rows           = 3
+    num_of_rows           = 3 * self.set_size
     cols                  = len( self.card_layout() )
     blanks                = [ ]
 
+
+
     for i in range( num_of_rows ):
 
-      row = [
-        layout[ j ][ random.randint( 0, len( layout[ j ] ) - 1 ) ] for j in range( cols )
-      ]
+      # Start with an empty row
+      row = [ ]
+
+      # Foreach column slot
+      print "PROCESSING ROW: %d" % ( i )
+
+      for j in range( 9 ):
+        print "PROCESSING COL: %d" % ( j )
+
+        # Set the value to be none temporarily
+        val = None
+
+        while val is None:
+
+          # Get a random value
+          val = layout[ j ][ random.randint( 0, len( layout[ j ] ) - 1 ) ]
+
+          # All the values for that column
+          col_values = [ x[ j ] for x in blanks ]
+
+          if val in col_values and len( col_values ) < len( layout[ j ] ):
+            val = None
+          else:
+            if not val in col_values and val is not None:
+              row.append( val )
+            elif len( col_values ) < len( layout[ j ] ):
+              val = None
+            else:
+              row.append( None )
+
+
+      print "BEFORE NONE PROCESSING"
+      print row
 
       while len( filter( lambda x: x is None, row ) ) < 4:
         row[ random.randint( 0, len( row ) - 1 ) ] = None
 
+
+      print "ROW IS:"
+      print row
+
       blanks.append( row )
 
+
+
+    print "THE ENTIRE GAME"
+    print blanks
 
     return blanks
 
@@ -255,11 +301,11 @@ class UKBingoCard( BingoCard ):
 
 if __name__ == '__main__':
 
-  o = USBingoCard( t='us', header=90, margin_top=35, margin_left=60, margin_right=65, margin_bottom=100, with_ref_image='templates/75/indigo.jpg', draw_lines=False )
-  o.print_card( 'us_bingo2.png' )
+  # o = USBingoCard( t='us', header=90, margin_top=35, margin_left=60, margin_right=65, margin_bottom=100, with_ref_image='templates/75/indigo.jpg', draw_lines=False )
+  # o.print_card( 'us_bingo2.png' )
 
-  o = UKBingoCard( t='uk', header=50, margin_top=40, margin_left=35, margin_right=38, margin_bottom=42, with_ref_image='templates/90/indigo.jpg', draw_lines=False )
-  BingoCard.draw_several_cards( o, how_many=6, save_to='uk_bingo2.png', cols_per_image=1, background='white' )
+  o = UKBingoCard( set_size=6, width=400, height=500)
+  o.print_card( 'uk_bingo2.png' )
 
 
 
