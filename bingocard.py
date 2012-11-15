@@ -211,6 +211,7 @@ class UKBingoCard( BingoCard ):
 
     if kwargs.has_key( 'set_size' ):
       self.set_size = kwargs[ 'set_size' ]
+      self.stack = range(1,91)
     else:
       self.set_size = 1
 
@@ -235,7 +236,6 @@ class UKBingoCard( BingoCard ):
     num_of_rows           = 3 * self.set_size
     cols                  = len( self.card_layout() )
     blanks                = [ ]
-
 
 
     for i in range( num_of_rows ):
@@ -265,6 +265,10 @@ class UKBingoCard( BingoCard ):
           else:
             if not val in col_values and val is not None:
               row.append( val )
+
+              if val in self.stack:
+                self.stack.remove( val )
+
             elif len( col_values ) < len( layout[ j ] ):
               val = None
             else:
@@ -274,9 +278,20 @@ class UKBingoCard( BingoCard ):
       print "BEFORE NONE PROCESSING"
       print row
 
-      while len( filter( lambda x: x is None, row ) ) < 4:
-        row[ random.randint( 0, len( row ) - 1 ) ] = None
 
+      while len( filter( lambda x: x is not None, row ) ) != 5:
+        l = len( filter( lambda x: x is not None, row ) )
+        if l > 5:
+          index = random.randint( 0, len( row ) - 1 )
+          row[ index ] = None
+        elif l < 5:
+          for j in range( len( row ) ):
+            if row[ j ] is None:
+              possible_values = list( set( layout[ j ] ) - set( [ x[ j ] for x in blanks ] ) )
+              if len( possible_values ) == 0:
+                row[ j ] = 'NA'
+              else:
+                row[ j ] = possible_values[ 0 ]
 
       print "ROW IS:"
       print row
@@ -286,7 +301,7 @@ class UKBingoCard( BingoCard ):
 
 
     print "THE ENTIRE GAME"
-    print blanks
+    print self.stack
 
     return blanks
 
