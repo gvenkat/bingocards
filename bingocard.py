@@ -1,4 +1,5 @@
 
+
 from PIL import Image, ImageDraw, ImageFont, _imaging
 import random, sys, os
 
@@ -22,18 +23,18 @@ class BingoCard( object ):
     else:
       cols = how_many
 
-    iw, ih, w, h = card.width, card.height, card.width * cols, card.height * rows 
+    iw, ih, w, h = card.width, card.height, card.width * cols, card.height * rows
     nimage = Image.new( 'RGB', ( w, h ), background )
 
-    for row in range( rows ): 
+    for row in range( rows ):
       for col in range( cols ):
         embed_image = card.print_card( save_to=None )
-        nimage.paste( embed_image, ( col * iw, row * ih ) ) 
+        nimage.paste( embed_image, ( col * iw, row * ih ) )
 
 
     if save_to is None:
       return nimage
-    else: 
+    else:
       return nimage.save( save_to )
 
 
@@ -55,14 +56,14 @@ class BingoCard( object ):
     self.image  = None
 
     if margin is None and ( margin_left > 0 and margin_right > 0 and margin_bottom > 0 and margin_top > 0 ):
-      self.margin_left    = margin_left 
+      self.margin_left    = margin_left
       self.margin_right   = margin_right
       self.margin_bottom  = margin_bottom
       self.margin_top     = margin_top
     else:
       margin = margin or 10
-      self.margin_top = self.margin_left = self.margin_right = self.margin_bottom = margin 
-      
+      self.margin_top = self.margin_left = self.margin_right = self.margin_bottom = margin
+
 
   def uk_card_layout( self ):
     return [
@@ -223,7 +224,7 @@ if __name__ == '__main__':
   # o.print_card( 'us_bingo2.png' )
 
   o = BingoCard( t='uk', header=50, margin_top=40, margin_left=35, margin_right=38, margin_bottom=42, with_ref_image='templates/90/indigo.jpg', draw_lines=False )
-  BingoCard.draw_several_cards( o, how_many=6, save_to='uk_bingo2.png', cols_per_image=1, background='white' ) 
+  BingoCard.draw_several_cards( o, how_many=6, save_to='uk_bingo2.png', cols_per_image=1, background='white' )
 
 
 
