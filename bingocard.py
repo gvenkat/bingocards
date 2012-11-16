@@ -140,7 +140,7 @@ class BingoCard( object ):
 
 
     draw        = ImageDraw.Draw( image )
-    col_height  = ( height - top - mb - ( sl * sg ) ) / len( layout )
+    col_height  = ( height - top - mb - ( ( ( len( layout ) // sl ) - 1 ) * sg ) ) / len( layout )
     col_width   = ( width - ( ml + mr ) ) / len( layout[ 0 ] )
 
     self.draw_lines_on_image( draw, layout, col_height, col_width )
@@ -295,7 +295,7 @@ if __name__ == '__main__':
   # o = USBingoCard( t='us', header=90, margin_top=35, margin_left=60, margin_right=65, margin_bottom=100, with_ref_image='templates/75/indigo.jpg', draw_lines=False )
   # o.print_card( 'us_bingo2.png' )
 
-  o = UKBingoCard( set_size=6, set_gap=85, set_length=3, header=32.5, margin_top=25, margin_left=100, margin_right=105, margin_bottom=75, with_ref_image='templates/90/6/indigo.jpg', draw_lines=False)
+  o = UKBingoCard( set_size=6, set_gap=62.5, set_length=3, header=62.5, margin_top=1, margin_left=100, margin_right=105, margin_bottom=75, with_ref_image='templates/90/6/indigo.jpg', draw_lines=False)
   o.print_card( 'uk_bingo2.png' )
 
 
