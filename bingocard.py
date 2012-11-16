@@ -258,7 +258,6 @@ class UKBingoCard( BingoCard ):
               for k in range( len( layout ) ):
                 if val in layout[ k ]:
                   if not published_cols.has_key( k ) or (published_cols.has_key( k ) and published_cols[ k ] < 4):
-                    print "ROW %d, COL %d , Val %d" % ( i, j, val )
                     row[ k ] = val
                     if not published_cols.has_key( k ):
                       published_cols[ k ] = 1
@@ -274,8 +273,6 @@ class UKBingoCard( BingoCard ):
 
         blanks.append( row )
 
-
-    print blanks
     if len(stack) > 0:
       return self.bingo_card()
     else:
