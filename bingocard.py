@@ -50,7 +50,9 @@ class BingoCard( object ):
         'margin',
         'with_ref_image',
         'background',
-        'draw_lines'
+        'draw_lines',
+        'set_gap',
+        'set_length'
       ]
 
   def _prepare_args_from_dictionary( self, _kwargs ):
@@ -62,7 +64,7 @@ class BingoCard( object ):
     return new_kwargs
 
 
-  def __init__( self, width=800, height=600, header=10, margin_top=10, margin_left=10, margin_right=10, margin_bottom=10, margin=None, with_ref_image=None, background='white', draw_lines=True ):
+  def __init__( self, width=800, height=600, header=10, margin_top=10, margin_left=10, margin_right=10, margin_bottom=10, margin=None, with_ref_image=None, background='white', draw_lines=True, set_gap=0, set_length=1):
     self.width  = width
     self.height = height
     self.header = header
@@ -75,6 +77,9 @@ class BingoCard( object ):
     self.text_size = None
     self.text_color = 0
     self.image  = None
+    self.set_length = set_length
+    self.set_gap = set_gap
+
 
     if margin is None and ( margin_left > 0 and margin_right > 0 and margin_bottom > 0 and margin_top > 0 ):
       self.margin_left    = margin_left
@@ -110,6 +115,7 @@ class BingoCard( object ):
 
     return top
 
+  # FIXME: Doesn't deal with sets yet
   def draw_lines_on_image( self, draw, layout, col_height, col_width ):
     if self.draw_lines:
       # Rows
@@ -130,9 +136,11 @@ class BingoCard( object ):
     image, width, height = self.image, self.width, self.height
     font, text_size, top = self.get_font(), self.get_text_size(), self.get_top()
     ml, mr, mt, mb = self.margin_left, self.margin_right, self.margin_top, self.margin_bottom
+    sl, sg  = self.set_length, self.set_gap
+
 
     draw        = ImageDraw.Draw( image )
-    col_height  = ( height - top - mb ) / len( layout )
+    col_height  = ( height - top - mb - ( sl * sg ) ) / len( layout )
     col_width   = ( width - ( ml + mr ) ) / len( layout[ 0 ] )
 
     self.draw_lines_on_image( draw, layout, col_height, col_width )
@@ -143,7 +151,7 @@ class BingoCard( object ):
         number = layout[ i ][ j ]
 
         x = ml + ( j * col_width ) + ( col_width / 2 ) - ( text_size / 2 )
-        y = top + ( i * col_height ) + ( col_height / 2 ) - ( text_size / 2 )
+        y = top + ( ( i // sl ) * sg ) + ( i * col_height ) + ( col_height / 2 ) - ( text_size / 2 )
 
         if number is not None:
           draw.text( ( x, y ), str( number ), fill=0, font=font )
@@ -287,7 +295,7 @@ if __name__ == '__main__':
   # o = USBingoCard( t='us', header=90, margin_top=35, margin_left=60, margin_right=65, margin_bottom=100, with_ref_image='templates/75/indigo.jpg', draw_lines=False )
   # o.print_card( 'us_bingo2.png' )
 
-  o = UKBingoCard( set_size=6, width=400, height=500)
+  o = UKBingoCard( set_size=6, set_gap=85, set_length=3, header=32.5, margin_top=25, margin_left=100, margin_right=105, margin_bottom=75, with_ref_image='templates/90/6/indigo.jpg', draw_lines=False)
   o.print_card( 'uk_bingo2.png' )
 
 
