@@ -54,9 +54,8 @@ USAGE
 
   ```
 
-Constructor takes following arguments
 
-bingocard.py exports three classes ```BingoCard```, ```USBingoCard``` and ```UKBingoCard```. ```BingoCard``` is meant to be and abstract superclass
+bingocard.py exports three classes ```BingoCard```, ```USBingoCard``` and ```UKBingoCard```. ```BingoCard``` is meant to be an abstract superclass
 that really does the bulk of the drawing work. ```USBingoCard``` and ```UKBingoCard``` data for generating cards.
 
 
