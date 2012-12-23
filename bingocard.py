@@ -198,11 +198,18 @@ class USBingoCard( BingoCard ):
     num_of_rows = 5
     cols        = 5
     blanks      = [ ]
+    possible_numbers = range( 1, 76 )
 
     for i in range( num_of_rows ):
-      row = [
-        layout[ j ][ random.randint( 0, len( layout[ j ] ) - 1 ) ] for j in range( cols )
-      ]
+      row = [ ]
+      for j in range( cols ):
+        flag = True
+        while flag:
+          number = layout[ j ][ random.randint( 0, len( layout[ j ] ) - 1 ) ]
+          if number in possible_numbers:
+            possible_numbers.remove( number )
+            row.append( number )
+            flag = False
 
       blanks.append( row )
 
